@@ -61,5 +61,14 @@ body.is-complete .wood-tile,body.is-complete .cell{cursor:default;pointer-events
  .session-stats strong{white-space:nowrap}
 }
 
-.board-bottomline:has(#date-leaderboard:not([hidden])){justify-content:space-between}#date-leaderboard{font-size:10px;letter-spacing:0;padding:5px 0;min-height:32px}
-@media (max-width:650px), (max-width:1000px) and (pointer:coarse), (max-width:1000px) and (max-height:500px){.board-column:has(#date-leaderboard:not([hidden])){grid-template-rows:23px minmax(0,1fr) 32px 2px}}
+.date-bar{flex-wrap:wrap}.date-actions{display:flex;align-items:center;gap:10px;margin-left:auto}#date-leaderboard{font-size:11px;white-space:nowrap;min-height:36px;padding:5px 8px}
+@media (max-width:650px), (max-width:1000px) and (pointer:coarse), (max-width:1000px) and (max-height:500px){
+ .date-actions{display:contents}#date-leaderboard{position:absolute;left:120px;bottom:0;min-height:30px;font-size:10px;padding:4px 5px}
+ .date-bar:has(#date-leaderboard:not([hidden])) .mode{max-width:calc(100% - 235px)}
+}
+@media (max-width:1000px) and (max-height:500px) and (min-width:600px){
+ .date-bar:has(#date-leaderboard:not([hidden])) .date-navigation{padding-right:250px}
+ .date-actions{display:flex;position:absolute;right:0;top:0;height:44px;gap:5px}
+ #date-leaderboard{position:static;min-height:40px}
+ .date-actions .mode,.date-bar:has(#date-leaderboard:not([hidden])) .mode{position:static;max-width:140px}
+}
