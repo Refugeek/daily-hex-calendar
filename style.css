@@ -60,3 +60,6 @@ body.is-complete .wood-tile,body.is-complete .cell{cursor:default;pointer-events
  .session-stats>div:first-child>.eyebrow{display:none}
  .session-stats strong{white-space:nowrap}
 }
+
+.board-bottomline:has(#date-leaderboard:not([hidden])){justify-content:space-between}#date-leaderboard{font-size:10px;letter-spacing:0;padding:5px 0;min-height:32px}
+@media (max-width:650px), (max-width:1000px) and (pointer:coarse), (max-width:1000px) and (max-height:500px){.board-column:has(#date-leaderboard:not([hidden])){grid-template-rows:23px minmax(0,1fr) 32px 2px}}

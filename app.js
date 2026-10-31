@@ -59,6 +59,7 @@ function render(){
  $('tray').replaceChildren();
  PIECES.forEach(piece=>{const button=document.createElement('button');button.className=`tile-slot${selected===piece.id?' selected':''}${placements[piece.id]?' placed':''}`;button.dataset.piece=piece.id;button.disabled=won;button.setAttribute('aria-label',`Tile ${piece.name}, ${piece.cells.length} hexagons${placements[piece.id]?', on board':''}`);button.setAttribute('aria-pressed',selected===piece.id?'true':'false');const cells=turn(piece.cells,rotations[piece.id]);const coords=cells.map(xy),xs=coords.map(c=>c[0]),ys=coords.map(c=>c[1]);const minX=Math.min(...xs)-SIZE-4,minY=Math.min(...ys)-SIZE-4,w=Math.max(...xs)-minX+SIZE+4,h=Math.max(...ys)-minY+SIZE+4;const s=svg('svg',{viewBox:`${minX} ${minY} ${w} ${h}`});s.append(tileGraphic(piece.id,cells));button.append(s);const name=document.createElement('span');name.className='tile-name';name.textContent=piece.name;button.append(name);$('tray').append(button);});
  const count=placements.filter(Boolean).length;$('remaining').textContent=12-count;$('progress-text').textContent=`${count} of 12 pieces placed`;$('progress-fill').style.width=`${count/12*100}%`;$('moves').textContent=moves;$('return-button').disabled=selected===null||!placements[selected]||won;$('rotate-button').disabled=selected===null||won;
+ updateDateLeaderboard();
  updateDateLimits();$('pause-button').disabled=won||started===null;
  $('date-input').value=date;$('date-title').textContent=new Date(`${date}T12:00:00`).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});$('target-chips').replaceChildren(...labels.map(label=>{const el=document.createElement('span');el.textContent=label;return el;}));updateMode();
  if(restoreFocus&&!won){const root=restoreFocus.tray?$('tray'):board;root.querySelector(`[data-${restoreFocus.type}="${restoreFocus.id}"]`)?.focus({preventScroll:true});}
@@ -143,7 +144,7 @@ $('reset-button').onclick=()=>confirmAction('Begin again?','The tiles return to 
 function openGroup(){ $('player-input').value=profile.player;$('group-input').value=profile.group;$('group-dialog').showModal();}
 $('help-button').onclick=()=>$('help-dialog').showModal();$('group-button').onclick=openGroup;
 document.querySelectorAll('.dialog-close,.dialog-done').forEach(b=>b.onclick=()=>b.closest('dialog').close());
-$('group-form').onsubmit=e=>{e.preventDefault();const player=$('player-input').value.trim(),group=$('group-input').value.trim().toUpperCase();if(!player||!group)return;profile={player,group};store.set('hex.profile',profile);$('group-dialog').close();say(`You’re playing as ${player} in ${group}.`);retryPending();};
+$('group-form').onsubmit=e=>{e.preventDefault();const player=$('player-input').value.trim(),group=$('group-input').value.trim().toUpperCase();if(!player||!group)return;profile={player,group};store.set('hex.profile',profile);updateDateLeaderboard(true);$('group-dialog').close();say(`You’re playing as ${player} in ${group}.`);retryPending();};
 async function withLock(name,action){
  if(!navigator.locks)return action();
  try{return await navigator.locks.request(name,action);}catch(error){if(error.name==='SecurityError'||error.name==='NotSupportedError')return action();throw error;}
@@ -162,21 +163,35 @@ async function victory(){
 }
 async function submitRecord(record){
  if(!record.player_name||!record.metadata.group){$('score-status').textContent='Your first result is saved. Add your name and group in My group to register it.';return;}
- try{await api.submit(record);record.submitted=true;store.set(`hex.result.${record.date}`,record);$('score-status').textContent=config.mode==='mock'?'Your first completion is recorded in the local mock leaderboard.':'Your first completion is registered with your group.';}
+ try{await api.submit(record);record.submitted=true;store.set(`hex.result.${record.date}`,record);updateDateLeaderboard(true);$('score-status').textContent=config.mode==='mock'?'Your first completion is recorded in the local mock leaderboard.':'Your first completion is registered with your group.';}
  catch(error){$('score-status').textContent=`Your score is saved on this device. Submission failed: ${error.message} Retry from Leaderboard.`;}
 }
 async function retryPending(){await withLock(`hex.submit.${localDate()}`,async()=>{const record=store.get(`hex.result.${localDate()}`);if(!record||record.submitted)return;if(!record.player_name||!record.metadata.group){if(!profile.player||!profile.group)return;record.player_name=profile.player;record.metadata.group=profile.group;store.set(`hex.result.${record.date}`,record);}await submitRecord(record);});if($('leaderboard-dialog').open)loadRankings();}
-let leaderboardRequest=0;
-async function loadRankings(){const request=++leaderboardRequest;$('rankings').replaceChildren();$('leaderboard-group').textContent=profile.group||'YOUR DAILY CIRCLE';$('leaderboard-caption').textContent=`${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})} · ${config.mode==='mock'?'Local mock · this browser only':'Your group’s fastest solves'} · lower is better`;
- const record=store.get(`hex.result.${localDate()}`);$('retry-score').hidden=!record||record.submitted;
+let leaderboardRequest=0,leaderboardDate=localDate(),availabilityKey='',availabilityVersion=0;
+const availabilityCache=new Map();
+async function updateDateLeaderboard(force=false){
+ const group=profile.group,viewDate=date,key=group+':'+viewDate;
+ if(key===availabilityKey&&!force)return;
+ availabilityKey=key;const version=++availabilityVersion,button=$('date-leaderboard');button.hidden=true;
+ if(!group)return;
+ let entry=availabilityCache.get(key);
+ if(force||!entry||Date.now()-entry.at>60000){
+  entry={at:Date.now(),promise:api.list(group,viewDate)};availabilityCache.set(key,entry);
+  if(availabilityCache.size>50)availabilityCache.delete(availabilityCache.keys().next().value);
+ }
+ try{const scores=await entry.promise;if(version!==availabilityVersion)return;button.hidden=!scores.length;button.setAttribute('aria-label', 'View leaderboard for '+new Date(viewDate+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}));}
+ catch{if(availabilityCache.get(key)===entry)availabilityCache.delete(key);}
+}
+async function loadRankings(){const request=++leaderboardRequest;$('leaderboard-title').textContent=leaderboardDate===localDate()?'Today’s little victories.':'This day’s little victories.';$('rankings').replaceChildren();$('leaderboard-group').textContent=profile.group||'YOUR DAILY CIRCLE';$('leaderboard-caption').textContent=`${new Date(leaderboardDate+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})} · ${config.mode==='mock'?'Local mock · this browser only':'Your group’s fastest solves'} · lower is better`;
+ const record=store.get(`hex.result.${localDate()}`);$('retry-score').hidden=leaderboardDate!==localDate()||!record||record.submitted;
  if(!profile.group){$('rankings').textContent='Add your name and a group code in My group to see your circle’s scores.';return;}
  $('rankings').textContent='Finding today’s little victories…';
- try{const scores=await api.list(profile.group,localDate());if(request!==leaderboardRequest)return;$('rankings').replaceChildren();if(!scores.length){$('rankings').textContent='A fresh page. Complete today’s puzzle to add the first score.';return;}
- const table=document.createElement('table');table.className='rank-table';const head=document.createElement('thead');head.innerHTML='<tr><th>Rank</th><th>Player</th><th>Time</th></tr>';table.append(head);const body=document.createElement('tbody');scores.forEach((s,i)=>{const row=document.createElement('tr');if(s.submission_id===`${clientId}:${localDate()}`)row.className='self';[String(i+1),s.player_name,formatTime(s.score)].forEach(t=>{const cell=document.createElement('td');cell.textContent=t;row.append(cell);});body.append(row);});table.append(body);$('rankings').append(table);
+ try{const scores=await api.list(profile.group,leaderboardDate);if(request!==leaderboardRequest)return;$('rankings').replaceChildren();if(!scores.length){$('rankings').textContent=leaderboardDate===localDate()?'A fresh page. Complete today’s puzzle to add the first score.':'No scores were recorded for this group on this date.';return;}
+ const table=document.createElement('table');table.className='rank-table';const head=document.createElement('thead');head.innerHTML='<tr><th>Rank</th><th>Player</th><th>Time</th></tr>';table.append(head);const body=document.createElement('tbody');scores.forEach((s,i)=>{const row=document.createElement('tr');if(s.submission_id===`${clientId}:${leaderboardDate}`)row.className='self';[String(i+1),s.player_name,formatTime(s.score)].forEach(t=>{const cell=document.createElement('td');cell.textContent=t;row.append(cell);});body.append(row);});table.append(body);$('rankings').append(table);
  }catch(error){if(request===leaderboardRequest)$('rankings').textContent=`Couldn’t load the leaderboard. ${error.message} Your puzzle is still available.`;}}
-function openRankings(){if(!$('leaderboard-dialog').open)$('leaderboard-dialog').showModal();loadRankings();}
-$('leaderboard-button').onclick=openRankings;$('win-rankings').onclick=()=>{$('win-dialog').close();openRankings();};$('refresh-rankings').onclick=loadRankings;$('retry-score').onclick=()=>{if(!profile.player||!profile.group){$('leaderboard-dialog').close();openGroup();}else retryPending();};
-window.addEventListener('storage',event=>{if(event.key===scoreKey(date))updateMode();if(event.key==='hex.profile')profile=store.get('hex.profile',profile);});
+function openRankings(){leaderboardDate=date;if(!$('leaderboard-dialog').open)$('leaderboard-dialog').showModal();loadRankings();}
+$('leaderboard-button').onclick=openRankings;$('date-leaderboard').onclick=openRankings;$('win-rankings').onclick=()=>{$('win-dialog').close();openRankings();};$('refresh-rankings').onclick=loadRankings;$('retry-score').onclick=()=>{if(!profile.player||!profile.group){$('leaderboard-dialog').close();openGroup();}else retryPending();};
+window.addEventListener('storage',event=>{if(event.key===scoreKey(date))updateMode();if(event.key==='hex.profile'){profile=store.get('hex.profile',profile);updateDateLeaderboard(true);}});
 window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
 setInterval(()=>{save();const today=localDate();if(today!==knownToday){knownToday=today;updateDateLimits();updateMode();say('A new day has arrived. Choose Today for the new daily challenge.');}},1000);
 function tick(){const time=formatTime(elapsed()),[whole,fraction]=time.split('.');$('timer').replaceChildren(document.createTextNode(whole));const span=document.createElement('span');span.textContent=`.${fraction}`;$('timer').append(span);requestAnimationFrame(tick);}

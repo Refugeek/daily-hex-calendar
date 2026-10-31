@@ -4,6 +4,8 @@ A single-page calendar puzzle with 12 wooden tiles, a local timer, daily scoring
 
 The hosted game uses a **Cloudflare Worker + D1 shared leaderboard**, configured in `config.js`. The backend source and deployment instructions are in [`backend/README.md`](backend/README.md). GitHub Pages hosts the game; Cloudflare stores and serves scores. Local puzzle play works offline; shared rankings require the hosted game and an internet connection. A browser-local mock is still available by setting `mode` to `mock`.
 
+The leaderboard follows the viewed puzzle date. A **View leaderboard** button appears below the board when that group/date has scores. Availability is checked on date/group changes with a 60-second in-memory cache, not while placing or rotating tiles. The main Leaderboard button can also open an empty date.
+
 ## Group invitation links
 
 Add `?group=EC3B3` to the game URL to select and save that group on the visitor's
@@ -79,7 +81,7 @@ Replace `YOUR-API-HOST` and the paths with your service's real URLs. `{group}` a
 | Setting | Meaning |
 | --- | --- |
 | `mode` | `'mock'` keeps scores in this browser; `'rest'` uses the configured endpoints. |
-| `readUrl` | GET URL for the selected group and **today's local date**. |
+| `readUrl` | GET URL for the selected group and viewed puzzle date. |
 | `submitUrl` | POST URL for an eligible first completion. |
 | `timeoutMs` | Request timeout; the supplied configuration uses 10 seconds. |
 
