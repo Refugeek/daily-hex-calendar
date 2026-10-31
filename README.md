@@ -2,7 +2,7 @@
 
 A single-page calendar puzzle with 12 wooden tiles, a local timer, daily scoring, and optional group rankings. **Open `index.html` to play: no installation, Python server, build step, or internet connection is required for local play.** All player-facing HTML, CSS, JavaScript, and SVG geometry are embedded in that file. `Daily Hex.html`, when supplied separately, is a copy of the same app.
 
-The default leaderboard is a browser-local mock. **Shared rankings require a separately hosted API.** GitHub Pages hosts the game; it does not host that API. The app supports the REST contract below. A LEADR adapter/backend is **not included** in this project, and no live leaderboard is currently configured.
+The hosted game uses a **Cloudflare Worker + D1 shared leaderboard**, configured in `config.js`. The backend source and deployment instructions are in [`backend/README.md`](backend/README.md). GitHub Pages hosts the game; Cloudflare stores and serves scores. Local puzzle play works offline; shared rankings require the hosted game and an internet connection. A browser-local mock is still available by setting `mode` to `mock`.
 
 ## Deploy to GitHub Pages
 
@@ -31,7 +31,9 @@ These settings follow GitHub's [publishing-source instructions](https://docs.git
 
 ## Connect a shared leaderboard
 
-### 1. Have a compatible API available
+### 1. Use the included Cloudflare backend or another compatible API
+
+This project includes a deployed Cloudflare Worker at `https://daily-hex-leaderboard.michaeldelaet.workers.dev`. Follow [`backend/README.md`](backend/README.md) to maintain it or deploy your own. The contract below also supports other backends.
 
 You need an HTTPS service with:
 

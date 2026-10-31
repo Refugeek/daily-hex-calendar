@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "daily-hex-leaderboard",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-31",
+  "workers_dev": true,
+  "vars": {
+    "ALLOWED_ORIGIN": "https://refugeek.github.io"
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "daily-hex-leaderboard",
+    "database_id": "52cfe463-1242-4347-b4d5-202d4245caf3"
+  }]
+}
