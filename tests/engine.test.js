@@ -2,7 +2,13 @@ import {solve} from '../tools/solver.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {BOARD,PIECES,turn,orientations,targets,isWin,canPlace,roundAxial,localDate} from '../engine.js';
-import {createLeaderboard,eligible,scoreKey,topTen} from '../leaderboard.js';
+import {createLeaderboard,eligible,scoreKey,topTen,groupFromSearch} from '../leaderboard.js';
+test('group invitation links normalize valid codes and ignore invalid or absent codes',()=>{
+ assert.equal(groupFromSearch('?group=EC3B3'),'EC3B3');
+ assert.equal(groupFromSearch('?group=%20ec3b3%20'),'EC3B3');
+ assert.equal(groupFromSearch('?group=TEAM_ONE-2'),'TEAM_ONE-2');
+ for(const search of ['', '?other=EC3B3', '?group=', '?group=BAD%20CODE', '?group='+ 'A'.repeat(49), '?group=%3Cscript%3E'])assert.equal(groupFromSearch(search),null);
+});
 test('50 unique board cells; 12 connected tiles cover 47 cells',()=>{
  assert.equal(BOARD.length,50);assert.equal(new Set(BOARD.map(c=>c.label)).size,50);assert.equal(new Set(BOARD.map(c=>`${c.q},${c.r}`)).size,50);assert.equal(PIECES.length,12);assert.equal(PIECES.reduce((n,p)=>n+p.cells.length,0),47);
  for(const {cells}of PIECES){const seen=new Set([0]);let changed=true;while(changed){changed=false;cells.forEach(([q,r],i)=>{if(seen.has(i))return;if([...seen].some(j=>{const dq=q-cells[j][0],dr=r-cells[j][1];return Math.max(Math.abs(dq),Math.abs(dr),Math.abs(dq+dr))===1;})){seen.add(i);changed=true;}});}assert.equal(seen.size,cells.length);}

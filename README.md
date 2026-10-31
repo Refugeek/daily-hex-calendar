@@ -4,6 +4,19 @@ A single-page calendar puzzle with 12 wooden tiles, a local timer, daily scoring
 
 The hosted game uses a **Cloudflare Worker + D1 shared leaderboard**, configured in `config.js`. The backend source and deployment instructions are in [`backend/README.md`](backend/README.md). GitHub Pages hosts the game; Cloudflare stores and serves scores. Local puzzle play works offline; shared rankings require the hosted game and an internet connection. A browser-local mock is still available by setting `mode` to `mock`.
 
+## Group invitation links
+
+Add `?group=EC3B3` to the game URL to select and save that group on the visitor's
+browser: https://refugeek.github.io/daily-hex-calendar/?group=EC3B3 . Existing
+nicknames are preserved; new players are prompted for one. Group codes are
+trimmed, uppercased, and must contain 1-48 letters, digits, hyphens, or underscores.
+Invalid or absent codes leave the saved group unchanged. The link does not alter
+previously recorded scores. Group codes select public rankings; they are not passwords.
+
+The A5 office flyer can be regenerated with `python tools/create_flyer.py` on
+Windows with Node, ReportLab, and the Georgia/Segoe UI fonts installed. Its PDF
+is written to `output/pdf/daily-hex-EC3B3-A5.pdf`.
+
 ## Deploy to GitHub Pages
 
 Choose one method. Method A needs only the prebuilt HTML. Method B rebuilds the app when its source changes.

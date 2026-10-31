@@ -1,5 +1,5 @@
 import {BOARD,PIECES,GEOMETRY_VERSION,key,turn,targets,localDate,occupied,canPlace,isWin,roundAxial,isUnsolvableDate} from './engine.js';
-import {createLeaderboard,eligible,scoreKey} from './leaderboard.js';
+import {createLeaderboard,eligible,scoreKey,groupFromSearch} from './leaderboard.js';
 import {hexOutlinePath} from './geometry.js';
 const $=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',SIZE=28,ROOT3=Math.sqrt(3);
 let storageAvailable=true;
@@ -8,6 +8,8 @@ try{localStorage.setItem('hex.check','1');localStorage.removeItem('hex.check');}
 const config=window.HEX_CONFIG?.leaderboard||{mode:'mock'};
 const api=createLeaderboard(config,store);
 let profile=store.get('hex.profile',{player:'',group:''});
+const linkedGroup=groupFromSearch(window.location.search);
+if(linkedGroup){profile={...profile,group:linkedGroup};store.set('hex.profile',profile);}
 let clientId=store.get('hex.clientId');if(!clientId){clientId=(crypto.randomUUID?.()||Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join(''));store.set('hex.clientId',clientId);}
 let date=localDate(),labels=targets(date),placements=PIECES.map(()=>null),rotations=PIECES.map(()=>0),selected=null,drag=null,hover=null,moves=0,started=null,elapsedBase=0,won=false,practice=false,paused=false,knownToday=localDate(),pendingConfirm=null;
 const board=$('board');
@@ -180,4 +182,5 @@ setInterval(()=>{save();const today=localDate();if(today!==knownToday){knownToda
 function tick(){const time=formatTime(elapsed()),[whole,fraction]=time.split('.');$('timer').replaceChildren(document.createTextNode(whole));const span=document.createElement('span');span.textContent=`.${fraction}`;$('timer').append(span);requestAnimationFrame(tick);}
 restore();render();if(paused)showPause();tick();
 $('storage-note').textContent=config.mode==='mock'?'LOCAL MOCK LEADERBOARD · NO ACCOUNT NEEDED':'GROUP LEADERBOARD · ONE DAILY RESULT';
+if(linkedGroup&&!profile.player&&!paused)openGroup();
 if(isUnsolvableDate(labels))say('Tuesday, February 1 cannot be solved without flipping a photographed tile. Choose another date.');else if(!storageAvailable)say('Browser storage is unavailable. You can play, but official scores cannot be saved.');else if(started!==null)say('Welcome back. Your board and running timer have been restored.');else if(store.get(scoreKey(date)))say('Your official result for today is saved. Further attempts are unranked practice.');

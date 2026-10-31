@@ -1,4 +1,5 @@
 export function scoreKey(date){return `hasCompletedToday_${date}`;}
+export function groupFromSearch(search){const value=new URLSearchParams(search).get('group')?.trim().toUpperCase();return value&&/^[A-Z0-9_-]{1,48}$/.test(value)?value:null;}
 export function eligible(date,today,completed,practice){return date===today&&!completed&&!practice;}
 export function topTen(rows,group,date){return rows.filter(r=>r&&r.date===date&&r.metadata?.group===group&&typeof r.player_name==='string'&&Number.isFinite(r.score)&&r.score>=0).sort((a,b)=>a.score-b.score).slice(0,10);}
 export function createLeaderboard(config,storage,fetcher=globalThis.fetch){
