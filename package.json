@@ -1,0 +1,10 @@
+{
+  "name": "daily-hex-calendar",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "verify:dates": "node tests/verify-dates.js",
+    "build": "node tools/build.mjs"
+  }
+}

@@ -1,0 +1,306 @@
+{
+  "source": "IMG_1409.jpeg",
+  "board_row_q_starts": [
+    0,
+    -1,
+    -2,
+    -2,
+    -3,
+    -3,
+    -3
+  ],
+  "method": "Color-isolated photo silhouettes fitted to face-up polyhexes with positive-determinant transforms; no reflection in the fit. Rounded physical corners and photographic pixels account for residual boundary mismatch.",
+  "pieces": [
+    {
+      "letter": "A",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "silhouette_mismatch_fraction": 0.01701
+    },
+    {
+      "letter": "B",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "silhouette_mismatch_fraction": 0.02546
+    },
+    {
+      "letter": "C",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "silhouette_mismatch_fraction": 0.04112
+    },
+    {
+      "letter": "D",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          -1
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "silhouette_mismatch_fraction": 0.03205
+    },
+    {
+      "letter": "E",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          -1
+        ]
+      ],
+      "silhouette_mismatch_fraction": 0.02719
+    },
+    {
+      "letter": "F",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "silhouette_mismatch_fraction": 0.02504
+    },
+    {
+      "letter": "G",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "silhouette_mismatch_fraction": 0.03222
+    },
+    {
+      "letter": "H",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "silhouette_mismatch_fraction": 0.02718
+    },
+    {
+      "letter": "I",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          -1
+        ]
+      ],
+      "silhouette_mismatch_fraction": 0.02628
+    },
+    {
+      "letter": "J",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "silhouette_mismatch_fraction": 0.03795
+    },
+    {
+      "letter": "K",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          -1
+        ]
+      ],
+      "silhouette_mismatch_fraction": 0.02718
+    },
+    {
+      "letter": "L",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "silhouette_mismatch_fraction": 0.02238
+    }
+  ],
+  "duplicate_pairs": [
+    [
+      "E",
+      "I"
+    ],
+    [
+      "F",
+      "L"
+    ],
+    [
+      "G",
+      "H"
+    ]
+  ],
+  "opposite_handed_hook_pair": [
+    "J",
+    "K"
+  ],
+  "solvability": {
+    "checked": 2562,
+    "solvable_without_flips": 2561,
+    "unsolvable": [
+      [
+        "TUE",
+        "FEB",
+        "1"
+      ]
+    ],
+    "independent_algorithm_x_confirmation": true,
+    "reflecting_G_makes_exception_solvable": true
+  }
+}
