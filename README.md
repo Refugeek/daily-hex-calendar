@@ -248,7 +248,7 @@ Moves count successful placements, on-board rotations, and returns. Rotations of
 
 Only today's first eligible completion can be recorded. The browser sets `hasCompletedToday_<YYYY-MM-DD> = true` at completion, before network submission, and saves the immutable result separately. If player/group details are missing, the saved time can be submitted after entering them. Once a result has been submitted, changing the profile does not submit it to another group.
 
-Restarts, repeat completions, past dates, and the unavailable date are unranked. At local midnight the previous day's challenge becomes practice; choose Today for the new daily puzzle. Failed submissions can be retried without creating another attempt; the current UI retries only today's saved result.
+Restarts, repeat completions, past dates, and the unavailable date are unranked. At local midnight the previous day's challenge becomes practice; choose Today for a fresh official daily puzzle. Time spent on older puzzles does not disqualify today's first attempt. Starting today's timer is remembered across date navigation and reloads, so returning to an already-started daily puzzle remains practice. Failed submissions keep the original score and retry on page load, network reconnection, or opening the leaderboard; retries currently apply only to today's saved result. Open rankings refresh when a submission succeeds.
 
 Names, groups, sessions, scores, and completion flags use browser storage. Storage unavailability degrades to practice play. File-origin storage behavior varies by browser; moving or renaming the HTML can change its storage area. The completion lock is local to that browser/device, not a shared identity or server-side anti-cheat system.
 

@@ -28,7 +28,7 @@ function tileGraphic(id,cells,project=xy,ghost=false){
 function elapsed(){return elapsedBase+(started===null?0:performance.now()-started);}
 function formatTime(ms){const ds=Math.floor(ms/100),sec=Math.floor(ds/10)%60,min=Math.floor(ds/600);return `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}.${ds%10}`;}
 function say(message){$('status').textContent=message;}
-function timerStart(){if(started===null&&!won&&!paused){started=performance.now();save();}}
+function timerStart(){if(started===null&&!won&&!paused){started=performance.now();if(date===localDate())store.set(`hex.started.${date}`,true);save();}}
 function save(){store.set('hex.session',{geometry:GEOMETRY_VERSION,date,placements,rotations,moves,elapsed:elapsed(),savedAt:Date.now(),running:started!==null,paused,won,practice});}
 function restore(){const s=store.get('hex.session');if(!s||s.geometry!==GEOMETRY_VERSION||s.date!==date||s.placements?.length!==PIECES.length)return;
  try{const p=s.placements;if(!p.every((v,i)=>v===null||(Number.isInteger(v.q)&&Number.isInteger(v.r)&&Number.isInteger(v.rotation)&&canPlace(i,v,p,labels))))return;
@@ -123,7 +123,7 @@ $('rotate-button').onclick=rotateSelected;$('return-button').onclick=returnSelec
 function confirmAction(title,copy,callback){$('confirm-title').textContent=title;$('confirm-copy').textContent=copy;pendingConfirm=callback;$('confirm-dialog').showModal();}
 $('confirm-cancel').onclick=()=>$('confirm-dialog').close();$('confirm-yes').onclick=()=>{$('confirm-dialog').close();const callback=pendingConfirm;pendingConfirm=null;callback?.();};
 function newGame(nextDate,isPractice=false){if(nextDate>localDate()||paused)return;cancelDrag();date=nextDate;labels=targets(date);placements=PIECES.map(()=>null);rotations=PIECES.map(()=>0);selected=null;hover=null;moves=0;started=null;elapsedBase=0;won=false;practice=isPractice;save();render();say(isUnsolvableDate(labels)?'Tuesday, February 1 cannot be solved with the photographed pieces without flipping. Choose another date.':'Take your time. The clock starts with your first tile.');}
-function changeDate(next){if(paused)return;if(next>localDate()){$('date-input').value=date;say('Future puzzles unlock on their day. Choose today or an earlier date.');return;}if(!/^\d{4}-\d{2}-\d{2}$/.test(next)||!Number.isFinite(new Date(`${next}T12:00:00`).getTime())||next===date){$('date-input').value=date;return;}const proceed=()=>newGame(next,next!==localDate()||started!==null||elapsedBase>0);if(started!==null&&!won)confirmAction('Try another day?','Your current board will be cleared. Returning to today after starting another puzzle is an unranked practice attempt.',proceed);else proceed();$('date-input').value=date;}
+function changeDate(next){if(paused)return;if(next>localDate()){$('date-input').value=date;say('Future puzzles unlock on their day. Choose today or an earlier date.');return;}if(!/^\d{4}-\d{2}-\d{2}$/.test(next)||!Number.isFinite(new Date(`${next}T12:00:00`).getTime())||next===date){$('date-input').value=date;return;}if(date===localDate()&&(started!==null||elapsedBase>0))store.set(`hex.started.${date}`,true);const proceed=()=>newGame(next,next!==localDate()||!!store.get(`hex.started.${next}`,false));if(started!==null&&!won)confirmAction('Try another day?','Your current board will be cleared. If you already started today’s puzzle, returning to it will be unranked practice.',proceed);else proceed();$('date-input').value=date;}
 $('date-input').onchange=e=>changeDate(e.target.value);$('today-button').onclick=()=>changeDate(localDate());
 $('random-date-button').onclick=()=>{
  if(paused)return;
@@ -163,7 +163,7 @@ async function victory(){
 }
 async function submitRecord(record){
  if(!record.player_name||!record.metadata.group){$('score-status').textContent='Your first result is saved. Add your name and group in My group to register it.';return;}
- try{await api.submit(record);record.submitted=true;store.set(`hex.result.${record.date}`,record);updateDateLeaderboard(true);$('score-status').textContent=config.mode==='mock'?'Your first completion is recorded in the local mock leaderboard.':'Your first completion is registered with your group.';}
+ try{await api.submit(record);record.submitted=true;store.set(`hex.result.${record.date}`,record);updateDateLeaderboard(true);if($('leaderboard-dialog').open&&leaderboardDate===record.date)loadRankings();$('score-status').textContent=config.mode==='mock'?'Your first completion is recorded in the local mock leaderboard.':'Your first completion is registered with your group.';}
  catch(error){$('score-status').textContent=`Your score is saved on this device. Submission failed: ${error.message} Retry from Leaderboard.`;}
 }
 async function retryPending(){await withLock(`hex.submit.${localDate()}`,async()=>{const record=store.get(`hex.result.${localDate()}`);if(!record||record.submitted)return;if(!record.player_name||!record.metadata.group){if(!profile.player||!profile.group)return;record.player_name=profile.player;record.metadata.group=profile.group;store.set(`hex.result.${record.date}`,record);}await submitRecord(record);});if($('leaderboard-dialog').open)loadRankings();}
@@ -189,13 +189,15 @@ async function loadRankings(){const request=++leaderboardRequest;$('leaderboard-
  try{const scores=await api.list(profile.group,leaderboardDate);if(request!==leaderboardRequest)return;$('rankings').replaceChildren();if(!scores.length){$('rankings').textContent=leaderboardDate===localDate()?'A fresh page. Complete today’s puzzle to add the first score.':'No scores were recorded for this group on this date.';return;}
  const table=document.createElement('table');table.className='rank-table';const head=document.createElement('thead');head.innerHTML='<tr><th>Rank</th><th>Player</th><th>Time</th></tr>';table.append(head);const body=document.createElement('tbody');scores.forEach((s,i)=>{const row=document.createElement('tr');if(s.submission_id===`${clientId}:${leaderboardDate}`)row.className='self';[String(i+1),s.player_name,formatTime(s.score)].forEach(t=>{const cell=document.createElement('td');cell.textContent=t;row.append(cell);});body.append(row);});table.append(body);$('rankings').append(table);
  }catch(error){if(request===leaderboardRequest)$('rankings').textContent=`Couldn’t load the leaderboard. ${error.message} Your puzzle is still available.`;}}
-function openRankings(viewDate=date){leaderboardDate=viewDate;if(!$('leaderboard-dialog').open)$('leaderboard-dialog').showModal();loadRankings();}
+function openRankings(viewDate=date){leaderboardDate=viewDate;if(!$('leaderboard-dialog').open)$('leaderboard-dialog').showModal();loadRankings();retryPending();}
 $('leaderboard-button').onclick=()=>openRankings(localDate());$('date-leaderboard').onclick=()=>openRankings();$('win-rankings').onclick=()=>{$('win-dialog').close();openRankings(localDate());};$('refresh-rankings').onclick=loadRankings;$('retry-score').onclick=()=>{if(!profile.player||!profile.group){$('leaderboard-dialog').close();openGroup();}else retryPending();};
 window.addEventListener('storage',event=>{if(event.key===scoreKey(date))updateMode();if(event.key==='hex.profile'){profile=store.get('hex.profile',profile);updateDateLeaderboard(true);}});
 window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
+window.addEventListener('online',()=>retryPending());
 setInterval(()=>{save();const today=localDate();if(today!==knownToday){knownToday=today;updateDateLimits();updateMode();say('A new day has arrived. Choose Today for the new daily challenge.');}},1000);
 function tick(){const time=formatTime(elapsed()),[whole,fraction]=time.split('.');$('timer').replaceChildren(document.createTextNode(whole));const span=document.createElement('span');span.textContent=`.${fraction}`;$('timer').append(span);requestAnimationFrame(tick);}
 restore();render();if(paused)showPause();tick();
+retryPending();
 $('storage-note').textContent=config.mode==='mock'?'LOCAL MOCK LEADERBOARD · NO ACCOUNT NEEDED':'GROUP LEADERBOARD · ONE DAILY RESULT';
 if(linkedGroup&&!profile.player&&!paused)openGroup();
 if(isUnsolvableDate(labels))say('Tuesday, February 1 cannot be solved without flipping a photographed tile. Choose another date.');else if(!storageAvailable)say('Browser storage is unavailable. You can play, but official scores cannot be saved.');else if(started!==null)say('Welcome back. Your board and running timer have been restored.');else if(store.get(scoreKey(date)))say('Your official result for today is saved. Further attempts are unranked practice.');
