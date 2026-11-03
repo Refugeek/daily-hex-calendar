@@ -15,10 +15,6 @@ trimmed, uppercased, and must contain 1-48 letters, digits, hyphens, or undersco
 Invalid or absent codes leave the saved group unchanged. The link does not alter
 previously recorded scores. Group codes select public rankings; they are not passwords.
 
-The A5 office flyer can be regenerated with `python tools/create_flyer.py` on
-Windows with Node, ReportLab, and the Georgia/Segoe UI fonts installed. Its PDF
-is written to `output/pdf/daily-hex-GROUPID-A5.pdf`.
-
 ## Deploy to GitHub Pages
 
 Choose one method. Method A needs only the prebuilt HTML. Method B rebuilds the app when its source changes.
