@@ -8,8 +8,8 @@ The upper-right **Leaderboard** button and the completion dialog always open tod
 
 ## Group invitation links
 
-Add `?group=EC3B3` to the game URL to select and save that group on the visitor's
-browser: https://refugeek.github.io/daily-hex-calendar/?group=EC3B3 . Existing
+Add `?group=GROUPID` to the game URL to select and save that group on the visitor's
+browser: https://refugeek.github.io/daily-hex-calendar/?group=GROUPID . Existing
 nicknames are preserved; new players are prompted for one. Group codes are
 trimmed, uppercased, and must contain 1-48 letters, digits, hyphens, or underscores.
 Invalid or absent codes leave the saved group unchanged. The link does not alter
@@ -17,7 +17,7 @@ previously recorded scores. Group codes select public rankings; they are not pas
 
 The A5 office flyer can be regenerated with `python tools/create_flyer.py` on
 Windows with Node, ReportLab, and the Georgia/Segoe UI fonts installed. Its PDF
-is written to `output/pdf/daily-hex-EC3B3-A5.pdf`.
+is written to `output/pdf/daily-hex-GROUPID-A5.pdf`.
 
 ## Deploy to GitHub Pages
 
